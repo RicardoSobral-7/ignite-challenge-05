@@ -55,8 +55,8 @@ export default function Post({ post }: PostProps) {
       <Head>
         <title>{post.data.title} | Spacetrabeling</title>
       </Head>
-      <header>
-        <div className={styles.banner}>
+      <header className={styles.banner}>
+        <div>
           <img src={post.data.banner.url} alt={post.data.title} />
         </div>
       </header>
@@ -74,7 +74,7 @@ export default function Post({ post }: PostProps) {
             </div>
           </header>
           {post.data.content.map(content => (
-            <article key={content.heading}>
+            <article className={styles.post} key={content.heading}>
               <h2>{content.heading}</h2>
               <div
                 dangerouslySetInnerHTML={{

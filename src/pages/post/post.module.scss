@@ -1,1 +1,50 @@
-// TODO
+.banner {
+  width: 100%;
+  max-height: 22.75rem;
+  margin-bottom: 4rem;
+
+  div {
+    width: 100%;
+    max-height: 100%;
+    img {
+      width: 100%;
+      height:22.75rem;
+      object-fit: contain;
+
+    }
+  }
+}
+
+.information {
+  margin-bottom: 1rem;
+
+  h1 {
+    font-size: 3rem;
+  }
+  div {
+    display: flex;
+    gap: 1.2rem;
+    align-items: center;
+    line-height: 2rem;
+    margin-top: 1.25rem;
+
+    span {
+      margin-left: -0.875rem;
+    }
+  }
+}
+
+.post {
+  padding: 3rem 0;
+  width: 100%;
+
+  h2 {
+    font-size: 2.25rem;
+    font-weight: bold;
+    color: #fff;
+  }
+
+  p {
+    color:var(--gray-300);
+  }
+}
