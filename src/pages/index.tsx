@@ -53,7 +53,16 @@ export default function Home(props: HomeProps) {
             <p>{post.data.subtitle}</p>
             <footer>
               <div>
-                <FiCalendar /> <span>{post.first_publication_date}</span>
+                <FiCalendar /> 
+                <span>
+                  {
+                  format(new Date(post.first_publication_date),
+                  'dd MMM yyyy',
+                  {
+                    locale: ptBR,
+                  })
+        }
+        </span>
               </div>
               <div>
                 <FiUser /> <span>{post.data.author}</span>
@@ -81,13 +90,7 @@ export const getStaticProps: GetStaticProps<HomeProps> = async ({
   const posts = postsResponse.results.map(post => {
     return {
       uid: post.uid,
-      first_publication_date: format(
-        new Date(post.first_publication_date),
-        'dd MMM yyyy',
-        {
-          locale: ptBR,
-        }
-      ),
+      first_publication_date: post.first_publication_date,
       data: {
         title: post.data.title,
         subtitle: post.data.subtitle,

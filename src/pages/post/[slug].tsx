@@ -66,7 +66,13 @@ export default function Post({ post }: PostProps) {
             <h1>{post.data.title}</h1>
             <div>
               <FiCalendar />
-              <span>{post.first_publication_date}</span>
+              <span>{format(
+      new Date(post.first_publication_date),
+      'dd MMM yyyy',
+      {
+        locale: ptBR,
+      }
+    )}</span>
               <FiUser />
               <span>{post.data.author}</span>
               <FiClock />
@@ -105,20 +111,15 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
   const post = {
     slug: response.uid,
-    first_publication_date: format(
-      new Date(response.first_publication_date),
-      'dd MMM yyyy',
-      {
-        locale: ptBR,
-      }
-    ),
-    last_publication_date: format(
-      new Date(response.last_publication_date),
-      "'editado em' dd MMM yyyy 'ás' HH:mm",
-      {
-        locale: ptBR,
-      }
-    ),
+    first_publication_date: response.first_publication_date,
+    last_publication_date: response.last_publication_date,
+    //format(
+    //   new Date(response.last_publication_date),
+    //   "'editado em' dd MMM yyyy 'ás' HH:mm",
+    //   {
+    //     locale: ptBR,
+    //   }
+    // ),
     data: {
       title: response.data.title,
       banner: {
