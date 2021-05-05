@@ -48,3 +48,24 @@
     color:var(--gray-300);
   }
 }
+
+.footer {
+  border-top: 1px solid var(--gray-300);
+  padding: 1.25rem;
+
+  .fastNavigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: start;
+
+    a {
+      span {
+        margin-top: 0.625rem;
+        display: block;
+        color: var(--highlight)
+      }
+    }
+  }
+
+}

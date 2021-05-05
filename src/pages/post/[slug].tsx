@@ -1,7 +1,9 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
+import { useRouter } from 'next/router';
 import Head from 'next/head';
 
 import { getPrismicClient } from '../../services/prismic';
+import Prismic from '@prismicio/client';
 
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
@@ -9,8 +11,9 @@ import ptBR from 'date-fns/locale/pt-BR';
 import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
 import { FiCalendar, FiClock, FiUser } from 'react-icons/fi';
-import { useRouter } from 'next/router';
 import { RichText } from 'prismic-dom';
+import Header from '../../components/Header';
+import Link from 'next/link';
 
 interface Post {
   first_publication_date: string | null;
@@ -32,6 +35,8 @@ interface Post {
 
 interface PostProps {
   post: Post;
+  prev_page: string;
+  next_page: string;
 }
 
 export default function Post({ post }: PostProps) {
@@ -52,6 +57,7 @@ export default function Post({ post }: PostProps) {
 
   return (
     <>
+      <Header />
       <Head>
         <title>{post.data.title} | Spacetrabeling</title>
       </Head>
@@ -66,18 +72,25 @@ export default function Post({ post }: PostProps) {
             <h1>{post.data.title}</h1>
             <div>
               <FiCalendar />
-              <span>{format(
-      new Date(post.first_publication_date),
-      'dd MMM yyyy',
-      {
-        locale: ptBR,
-      }
-    )}</span>
+              <span>
+                {format(new Date(post.first_publication_date), 'dd MMM yyyy', {
+                  locale: ptBR,
+                })}
+              </span>
               <FiUser />
               <span>{post.data.author}</span>
               <FiClock />
               <span>{readTime} min</span>
             </div>
+            {/* <p>
+                {format(
+                  new Date(post.last_publication_date),
+                  "* 'editado em' dd MMM yyyy 'às' HH:mm",
+                  {
+                    locale: ptBR,
+                  }
+                )}
+            </p> */}
           </header>
           {post.data.content.map(content => (
             <article className={styles.post} key={content.heading}>
@@ -87,9 +100,24 @@ export default function Post({ post }: PostProps) {
                   __html: RichText.asHtml(content.body),
                 }}
               />
-
             </article>
           ))}
+          <footer className={styles.footer}>
+            <div className={styles.fastNavigation}>
+              <Link href="#">
+                <a>
+                  Nome do anterior
+                  <span>Post anterior</span>
+                </a>
+              </Link>
+              <Link href="#">
+                <a>
+                  Nome do próximo
+                  <span>Próximo post</span>
+                </a>
+              </Link>
+            </div>
+          </footer>
         </section>
       </div>
     </>
@@ -97,9 +125,20 @@ export default function Post({ post }: PostProps) {
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
+  const prismic = getPrismicClient();
+  const postsReponse = await prismic.query([
+    Prismic.predicates.at('document.type', 'posts'),
+  ]);
+
+  const paths = postsReponse.results.map(result => ({
+    params: {
+      slug: result.uid,
+    },
+  }));
+
   return {
-    paths: [],
-    fallback: 'blocking',
+    paths,
+    fallback: false,
   };
 };
 
@@ -110,16 +149,9 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   const response = await prismic.getByUID('posts', String(slug), {});
 
   const post = {
-    slug: response.uid,
+    uid: response.uid,
+    last_publication_date: response.last_publication_date || null,
     first_publication_date: response.first_publication_date,
-    last_publication_date: response.last_publication_date,
-    //format(
-    //   new Date(response.last_publication_date),
-    //   "'editado em' dd MMM yyyy 'ás' HH:mm",
-    //   {
-    //     locale: ptBR,
-    //   }
-    // ),
     data: {
       title: response.data.title,
       banner: {
