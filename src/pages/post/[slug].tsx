@@ -1,6 +1,7 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import { useEffect } from 'react';
 
 import { getPrismicClient } from '../../services/prismic';
 import Prismic from '@prismicio/client';
@@ -16,6 +17,7 @@ import Header from '../../components/Header';
 import Link from 'next/link';
 
 interface Post {
+  uid: string;
   first_publication_date: string | null;
   last_publication_date: string | null;
   data: {
@@ -35,11 +37,11 @@ interface Post {
 
 interface PostProps {
   post: Post;
-  prev_page: string;
-  next_page: string;
+  prev_page: Post;
+  next_page: Post;
 }
 
-export default function Post({ post }: PostProps) {
+export default function Post({ post, next_page, prev_page }: PostProps) {
   const router = useRouter();
   if (router.isFallback) {
     return <h1>Carregando...</h1>;
@@ -54,6 +56,17 @@ export default function Post({ post }: PostProps) {
   }, 0);
 
   const readTime = Math.ceil(totalWords / 200);
+
+  useEffect(() => {
+    let script = document.createElement('script');
+    let anchor = document.getElementById('inject-comments-for-uterances');
+    script.setAttribute('src', 'https://utteranc.es/client.js');
+    script.setAttribute('crossorigin', 'anonymous');
+    script.setAttribute('repo', 'RicardoSobral-7/ignite-challenge-05');
+    script.setAttribute('issue-term', 'pathname');
+    script.setAttribute('theme', 'github-dark');
+    anchor.appendChild(script);
+  });
 
   return (
     <>
@@ -82,15 +95,16 @@ export default function Post({ post }: PostProps) {
               <FiClock />
               <span>{readTime} min</span>
             </div>
-              <p> 
-                {post.last_publication_date && format(
+            <p>
+              {post.last_publication_date &&
+                format(
                   new Date(post.last_publication_date),
                   "* 'editado em' dd MMM yyyy 'às' HH:mm",
                   {
                     locale: ptBR,
                   }
                 )}
-              </p>
+            </p>
           </header>
           {post.data.content.map(content => (
             <article className={styles.post} key={content.heading}>
@@ -104,19 +118,28 @@ export default function Post({ post }: PostProps) {
           ))}
           <footer className={styles.footer}>
             <div className={styles.fastNavigation}>
-              <Link href="#">
-                <a>
-                  Nome do anterior
-                  <span>Post anterior</span>
-                </a>
-              </Link>
-              <Link href="#">
-                <a>
-                  Nome do próximo
-                  <span>Próximo post</span>
-                </a>
-              </Link>
+              {prev_page ? (
+                <Link href={`/post/${prev_page.uid}`}>
+                  <a>
+                    {prev_page.data.title}
+                    <span>Post anterior</span>
+                  </a>
+                </Link>
+              ) : (
+                <div></div>
+              )}
+              {next_page ? (
+                <Link href={`/post/${next_page.uid}`}>
+                  <a>
+                    {next_page.data.title}
+                    <span>Próximo post</span>
+                  </a>
+                </Link>
+              ) : (
+                <div></div>
+              )}
             </div>
+            <div id="inject-comments-for-uterances"/>
           </footer>
         </section>
       </div>
@@ -142,15 +165,49 @@ export const getStaticPaths: GetStaticPaths = async () => {
   };
 };
 
-export const getStaticProps: GetStaticProps = async ({ params }) => {
+export const getStaticProps: GetStaticProps = async ({
+  params,
+  previewData,
+}) => {
   const { slug } = params;
 
   const prismic = getPrismicClient();
-  const response = await prismic.getByUID('posts', String(slug), {});
+  const response = await prismic.getByUID('posts', String(slug), {
+    ref: previewData?.ref ?? null,
+  });
+
+  if (!response.data) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
+  const next_page = await prismic.query(
+    Prismic.predicates.at('document.type', 'posts'),
+    {
+      pageSize: 1,
+      after: `${response.id}`,
+      orderings: '[document.first_publication_date desc]',
+    }
+  );
+
+  const prev_page = await prismic.query(
+    Prismic.predicates.at('document.type', 'posts'),
+    {
+      pageSize: 1,
+      after: `${response.id}`,
+      orderings: '[document.first_publication_date]',
+    }
+  );
 
   const post = {
     uid: response.uid,
-    last_publication_date: response.last_publication_date ? response.last_publication_date : "",
+    last_publication_date: response.last_publication_date
+      ? response.last_publication_date
+      : '',
     first_publication_date: response.first_publication_date,
     data: {
       title: response.data.title,
@@ -169,6 +226,8 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   return {
     props: {
       post,
+      next_page: next_page.results[0] || null,
+      prev_page: prev_page.results[0] || null,
     },
   };
 };
