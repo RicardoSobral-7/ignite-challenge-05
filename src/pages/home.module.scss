@@ -1,6 +1,11 @@
-.container {
-  width: 720px;
-  margin: 0 auto;
+.loadMore {
+  margin-top: 2.25rem;
+  background-color:transparent;
+  border: 0;
+  padding: 0;
+  color: var(--highlight);
+  font-weight: 600;
+  font-size: 1.125rem;
 }
 
 .post {
@@ -46,7 +51,7 @@
       }
 
       & + div {
-        margin-left:1rem ;
+        margin-left: 1rem;
       }
     }
   }

@@ -97,7 +97,7 @@ export default function Home({postsPagination, preview}: HomeProps) {
         ))}
 
         {nextPage && (
-          <button onClick={handleLoadPost} type="button">
+          <button onClick={handleLoadPost} type="button" className={styles.loadMore}>
             Carregar mais posts
           </button>
         )}
@@ -115,7 +115,7 @@ export const getStaticProps: GetStaticProps<HomeProps> = async ({
   const postsResponse = await prismic.query(
     [Prismic.predicates.at('document.type', 'posts')],
     {
-      pageSize: 2,
+      pageSize: 1,
       ref: previewData?.ref ?? null
     }
   );

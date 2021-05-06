@@ -82,15 +82,15 @@ export default function Post({ post }: PostProps) {
               <FiClock />
               <span>{readTime} min</span>
             </div>
-            {/* <p>
-                {format(
+              {/* <p> 
+                {post.last_publication_date && format(
                   new Date(post.last_publication_date),
                   "* 'editado em' dd MMM yyyy 'às' HH:mm",
                   {
                     locale: ptBR,
                   }
                 )}
-            </p> */}
+              </p> */}
           </header>
           {post.data.content.map(content => (
             <article className={styles.post} key={content.heading}>
@@ -150,12 +150,13 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
   const post = {
     uid: response.uid,
-    last_publication_date: response.last_publication_date || null,
+    // last_publication_date: response.last_publication_date ? response.last_publication_date : "",
     first_publication_date: response.first_publication_date,
     data: {
       title: response.data.title,
+      subtitle: response.data.subtitle,
       banner: {
-        url: response.data.banner.url ? response.data.banner.url : null,
+        url: response.data.banner.url,
       },
       author: response.data.author,
       content: response.data.content.map(content => ({
